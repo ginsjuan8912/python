@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import random
+import chardet
 
 class Processor:
 
@@ -78,6 +79,7 @@ class Processor:
 
     def load_words(self):
 
+      
         file_dir = os.path.dirname(__file__)
         print(file_dir)
 
@@ -86,10 +88,16 @@ class Processor:
         working_medium_path = Path(os.path.join(file_dir,'resources/medium.txt'))
         working_hard_path = Path(os.path.join(file_dir,'resources/hard.txt'))
 
+        with open(working_easy_path, 'rb') as f:
+            result = chardet.detect(f.read())
+
+        current_encoding = result['encoding']
+
+
         try:
-            easy_words_content = working_easy_path.read_text(encoding='utf-8')
-            medium_words_content = working_medium_path.read_text(encoding='utf-8')
-            hard_words_content = working_hard_path.read_text(encoding='utf-8')
+            easy_words_content = working_easy_path.read_text(encoding=current_encoding, errors='ignore')
+            medium_words_content = working_medium_path.read_text(encoding=current_encoding, errors='ignore')
+            hard_words_content = working_hard_path.read_text(encoding=current_encoding, errors='ignore')
         except FileNotFoundError:
             print(f'The resource file was not found in the {working_easy_path}.')
         else:
