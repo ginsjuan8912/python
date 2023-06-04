@@ -8,9 +8,14 @@ from tkinter import messagebox
 class Game:
 
     #ui components
-    seconds_left = 20
+    total_points = 0
+    left_points = 0
+    seconds_left = 30
+
     label_timer = None
+    label_points = None
     main_window = None
+    word_label = None
     #define the completed word
     completed_word = ''
     selected_word = ''
@@ -59,28 +64,37 @@ class Game:
         guess_label = tk.Label(window, text="Guess the word:", font=("Arial", 15))
         guess_label.grid(row=0, column=0)
 
+        self.left_points = 0
+
         for i in range(len(self.selected_word[0])):
+            self.left_points += 2
             textbox = tk.Entry(window, width=2, font=("Arial", 35), justify=tk.CENTER)
             textbox.grid(row=2, column=i, padx=5, pady=20)
             textbox.bind("<KeyRelease>", self.__move_focus)
             self.active_textbox.append(textbox)
 
-        word_label = tk.Label(window, text=self.selected_word[0], font=("Arial", 40, "bold"))
-        word_label.grid(row=4, column=0, columnspan=5)
+        self.word_label = tk.Label(window, text=self.selected_word[1], font=("Arial", 40, "bold"))
+        self.word_label.grid(row=4, column=0, columnspan=5)
 
     def __move_focus(self, event):
         
         current_index = self.active_textbox.index(event.widget)
-         # Check if Backspace key was pressed
-        if event.keysym == 'BackSpace':
+      
+
+         # Function to move focus to the next textbox
+        current_text = event.widget.get()
+        word = self.word_label.cget("text")
+
+        # Check if Backspace key was pressed
+        if event.keysym == 'BackSpace':            
         # Handle the Backspace key event here
             if current_index > 0:
                 self.active_textbox[current_index - 1].focus_set()
                 return
-        
-        # Function to move focus to the next textbox
-        current_text = event.widget.get()
 
+        if(current_text in word):            
+            word = word.replace(current_text, ' ')
+            self.word_label.config(text=word)
         # Move focus to the next textbox if current textbox has reached the desired length
         if len(current_text) == 1:
             next_index = current_index + 1
@@ -104,7 +118,14 @@ class Game:
         time_label = tk.Label(self.main_window, text="Time left", font=("Arial", 12))
         time_label.grid(row=5, column=2, sticky=tk.SE)
 
+        points_label = tk.Label(self.main_window, text="Points", font=("Arial", 10))
+        points_label.config(bg="green")
+        points_label.config(fg="white")
+        points_label.grid(row=5, column=0, sticky=tk.SW)
+     
+
         game.label_timer = time_label
+        game.label_points = points_label
         self.update()
 
         self.main_window.focus_force()
@@ -114,7 +135,8 @@ class Game:
 
         if(self.seconds_left == 0):
             self.main_window.destroy()
-            messagebox.showinfo("Game Over", "Game Over")
+            self.total_points += self.left_points
+            messagebox.showinfo("Game Over", "Game Over, Your total score is: " + str(self.total_points))            
             return
 
        #sorround with try except the following code
@@ -126,7 +148,12 @@ class Game:
                     if(self.active_textbox[word_indx].get() == ''):
                         character = self.selected_word[0][word_indx]
                         self.active_textbox[word_indx].insert(0, character)
+                        #search the character in the word_label and remove it
+                        word = self.word_label.cget("text")
+                        word = word.replace(character, ' ')
+                        self.word_label.config(text=word)
                         self.active_textbox[word_indx].config(state="disabled")
+                        self.left_points -= 2
             
             if(self.seconds_left == 10):
                 self.label_timer.config(bg="orange")
@@ -142,22 +169,25 @@ class Game:
             self.completed_word += self.active_textbox[i].get()
             self.completed_word = self.completed_word.strip()
 
-        if(self.completed_word == self.selected_word[0] and self.words_completed < 20):
+        if(self.completed_word == self.selected_word[0] and self.words_completed < 10):
             self.words_completed += 1
             self.__current_word += 1
             self.completed_word = ''
-            self.seconds_left = 20
+            self.seconds_left = 30
+            self.total_points += self.left_points
             self.print_game()
+           
 
         #if seconds_left less or equal to 3, then beep sound
         if(self.seconds_left <= 3):
             winsound.Beep(1000, 100)
 
-        self.label_timer.config(text=f"Time left: {self.seconds_left } seconds")    
+        self.label_timer.config(text=f"Time left: {self.seconds_left } seconds")   
+        self. label_points.config(text=f"Points Gained: {self.total_points} | Points left: {self.left_points }")
+
         self.seconds_left -= 1 
         self.main_window.after(1000, self.update )
     
-
     def remove_all_widgets(self):
     # Get a list of all the widgets in the window
         widgets = self.main_window.winfo_children()
