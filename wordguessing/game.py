@@ -1,6 +1,6 @@
 
 from random import choice
-import winsound
+#import winsound
 from WordProcessor import Processor
 import tkinter as tk
 from tkinter import messagebox
@@ -179,8 +179,8 @@ class Game:
            
 
         #if seconds_left less or equal to 3, then beep sound
-        if(self.seconds_left <= 3):
-            winsound.Beep(1000, 100)
+        #if(self.seconds_left <= 3):
+           # winsound.Beep(1000, 100)
 
         self.label_timer.config(text=f"Time left: {self.seconds_left } seconds")   
         self. label_points.config(text=f"Points Gained: {self.total_points} | Points left: {self.left_points }")
